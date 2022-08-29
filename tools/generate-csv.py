@@ -37,7 +37,7 @@ def parsemd(filename):
 def main():
     for file in os.listdir("./Document"):
         if file.find("-V") != -1:
-            parsemd("./Document/" + file)
+            parsemd(f"./Document/{file}")
 
 
 if __name__ == '__main__':

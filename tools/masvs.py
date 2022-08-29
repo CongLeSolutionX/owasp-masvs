@@ -44,12 +44,7 @@ class MASVS:
 
     def __init__(self, lang):
 
-        if lang == "en":
-            target = "../Document"
-        else:
-            target = "../Document-{}".format(lang)
-
-
+        target = "../Document" if lang == "en" else f"../Document-{lang}"
         for file in os.listdir(target):
 
             if re.match("0x\d{2}-V", file):
@@ -57,17 +52,14 @@ class MASVS:
                     regex = re.compile(r'\*\*(\d\.\d+)\*\*\s\|\s{0,1}(.*?)\s{0,1}\|\s{0,1}(.*?)\s{0,1}\|\s{0,1}(.*?)\s{0,1}\|(\s{0,1}(.*?)\s{0,1}\|)?')
                     if lang=="fa" :
                         line=line.decode('utf-8')
-                    m = re.search(regex, line)
+                    if m := re.search(regex, line):
+                        req = {'id': m[1].strip()}
 
-                    if m:
-                        req = {}
-
-                        req['id'] = m.group(1).strip()
-                        req['text'] = m.group(3).strip()
-                        req['category'] = m.group(2).replace(u"\u2011", "-")
-                        if m.group(5):
-                            req['L1'] = len(m.group(4).strip()) > 0
-                            req['L2'] = len(m.group(5).strip()) > 0
+                        req['text'] = m[3].strip()
+                        req['category'] = m[2].replace(u"\u2011", "-")
+                        if m[5]:
+                            req['L1'] = len(m[4].strip()) > 0
+                            req['L2'] = len(m[5].strip()) > 0
                             req['R'] = False
                         else:
                             req['R'] = True
@@ -86,8 +78,9 @@ class MASVS:
         xml = '<requirements>'
 
         for r in self.requirements:
-            xml += "<requirement id='{}' category='{}' L1='{}' L2='{}' R='{}'>{}</requirement>\n".format(r['id'], r['category'], int(r['L1']), int(r['L2']), int(r['R']), escape(r['text']))
-        
+            xml += f"<requirement id='{r['id']}' category='{r['category']}' L1='{int(r['L1'])}' L2='{int(r['L2'])}' R='{int(r['R'])}'>{escape(r['text'])}</requirement>\n"
+
+
         xml += '</requirements>'
         return xml
 
